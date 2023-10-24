@@ -1,26 +1,42 @@
-const express = require('express')
+const express = require('express');
+const prisma = require('./prisma/client');
+
 const app = express()
 const port = process.env.PORT || 3000;
 
 
-app.get('/company-info', (req, res) => {
+app.get('/company-info', async (req, res) => {
   const { q } = req.query;
 
-  console.log(q);
-
-  if(q.includes('airbnb')){
-    res.send({
-      name: 'Airbnb',
-      justification: 'Airbnb are a subsidiary of Bookings Holding Inc who profit from listing illegal settlement properties in Occupied Palestinian territories',
-      source: "https://undocs.org/en/A/HRC/43/71",
-      twitter: '@airbnb'
-  })
-    return;
-  } else {
-    res.send({
+  if(!q) {
+    return res.send({
       boycott: false,
     })
   }
+
+  const boycottCompany = await prisma.ethicalboycott_domain.findFirst({
+    where: {
+      domain_name: q,
+    },
+    include: {
+     ethicalboycott_company: true,
+    }
+  }) 
+
+
+  if(boycottCompany) {
+    return res.send({
+      boycott: true,
+      name: boycottCompany.ethicalboycott_company.name,
+      justification: boycottCompany.ethicalboycott_company.justification,
+      twitter: boycottCompany.ethicalboycott_company.twitter,
+      source: boycottCompany.ethicalboycott_company.source,
+    })
+  }
+
+  res.send({
+    boycott: false,
+  })
 })
 
 app.get('/', (req, res) => {
@@ -29,5 +45,5 @@ app.get('/', (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`App listening on port ${port}`)
 })

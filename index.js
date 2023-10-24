@@ -17,6 +17,7 @@ app.get('/company-info', async (req, res) => {
   const boycottCompany = await prisma.ethicalboycott_domain.findFirst({
     where: {
       domain_name: q,
+      archived: false,
     },
     include: {
      ethicalboycott_company: true,
@@ -30,7 +31,7 @@ app.get('/company-info', async (req, res) => {
       name: boycottCompany.ethicalboycott_company.name,
       justification: boycottCompany.ethicalboycott_company.justification,
       twitter: boycottCompany.ethicalboycott_company.twitter,
-      source: boycottCompany.ethicalboycott_company.source,
+      source: boycottCompany.ethicalboycott_company.source_url,
     })
   }
 
